@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" />
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 
-    <link rel="stylesheet" href="../lib/globalStyle.css" />
+    <link rel="stylesheet" href="./lib/globalStyle.css" />
 
     <style type="text/css">
  
@@ -45,10 +45,10 @@
    </div>
     
 
-    <script src="../lib/jquery.js" type="text/javascript"></script>
-    <script src="../lib/d3.v3.min.js" type="text/javascript"></script>
-    <script src="../lib/modernizr.svg.min.js" type="text/javascript"></script>
-    <script src="../lib/pym.js" type="text/javascript"></script>
+    <script src="./lib/jquery.js" type="text/javascript"></script>
+    <script src="./lib/d3.v3.min.js" type="text/javascript"></script>
+    <script src="./lib/modernizr.svg.min.js" type="text/javascript"></script>
+    <script src="./lib/pym.js" type="text/javascript"></script>
     <script>
 	
 var graphic = $('#graphic');
@@ -100,14 +100,13 @@ function drawGraphic(width) {
         .tickFormat(function(d,i) {
 			if(dvc.essential.dateFormat!=""){
             	if(chart_width <= threshold_sm){
-					var fmt = d3.time.format(xAxisTextFormat_sm_md_lg[0]);
+					var fmt = d3.time.format(dvc.optional.xAxisTextFormat_sm_md_lg[0]);
 					return i%dvc.optional.x_num_ticks_sm_md_lg[0] ?" ": '\u2019' + fmt(d);
 				} else if (width <= threshold_md) {
-        			var fmt = d3.time.format(xAxisTextFormat_sm_md_lg[1]);
+        			var fmt = d3.time.format(dvc.optional.xAxisTextFormat_sm_md_lg[1]);
 					return i%dvc.optional.x_num_ticks_sm_md_lg[1] ?" ": '\u2019' + fmt(d);
 				} else {
-					var fmt = d3.time.format(xAxisTextFormat_sm_md_lg[2]);
-					var str =  '\u2019' + parseInt(fmt(d)-1).toString().substring(2,4) + "/" + '\u2019' +  fmt(d).substring(2,4);
+					var fmt = d3.time.format(dvc.optional.xAxisTextFormat_sm_md_lg[2]);
 					return i%dvc.optional.x_num_ticks_sm_md_lg[2] ?" ": str/*fmt(d)*/;
             	}
 			} else {return d}
@@ -153,7 +152,19 @@ function drawGraphic(width) {
 		return d.cat;
 	}));
 	
-	y.domain([0, 110]);
+	//y domain calculations	: zero to intelligent max choice, or intelligent min and max choice,  or interval chosen manually
+	if (dvc.essential.yAxisScale == "auto_zero_max"){
+	   var yDomain = [
+						0,Math.ceil(d3.max(dvc.rows))
+					 ];
+	} else if (dvc.essential.yAxisScale == "auto_min_max"){
+		console.log("not appropriate for a stack bar chart");
+	} else {
+		console.log(dvc.rows);
+	   var yDomain = dvc.essential.yAxisScale;
+	}
+	
+	y.domain(yDomain);
 
     svg.append('g')
         .attr('class', 'x axis')
@@ -313,7 +324,6 @@ function drawGraphic(width) {
 			// If you have labels rather than years then you can split the lines using a double space (in the CSV file).
 			
 			if(dvc.essential.dateFormat==""){
-			d3.selectAll(".x text").each(insertLinebreaksLabels)
 			
 			function insertLinebreaksLabels() {
 							var str = this.innerHTML;
@@ -332,7 +342,10 @@ function drawGraphic(width) {
 									.attr('x', 0)			
 									.attr('dy', '1em');													
 									}
-			};		
+			};	
+			
+			d3.selectAll(".x text").each(insertLinebreaksLabels)
+				
 			};
 			
 		}// end function writeAnnotation()
@@ -364,11 +377,43 @@ function drawGraphic(width) {
 		d3.json("config.json", function(error, config) {
 		dvc=config
 		
+			d3.csv(dvc.essential.graphic_data_url).row(function(d) { 
+						  var mySum = 0;
+						  for (var o in d) { // iterate all the properties of d
+							  if (o === "group") continue; // if it's our key field skip it
+							  else mySum += +d[o]; // everyone else into the sum
+							}
+							return mySum
+							
+					  
+					   })
+					 .get(function(error, rows) { 
+						dvc.rows=rows;
+			});
+		  		
 			d3.csv(dvc.essential.graphic_data_url, function(error, data) {
 				graphic_data = data;
 				varnames = d3.keys(graphic_data[0]).filter(function(key) { return key !== "group";});
+				
+				//Get a sum of all variables (needed for working out max for y-axis)			
+//				d3.csv(dvc.essential.graphic_data_url)
+//				  .row(function(d) { 
+//						  var mySum = 0;
+//						  for (var o in d) { // iterate all the properties of d
+//							  if (o === "group") continue; // if it's our key field skip it
+//							  else mySum += +d[o]; // everyone else into the sum
+//							}
+//							return mySum
+//							
+//					  
+//					   })
+//					 .get(function(error, rows) { 
+//						
+//						dvc.rows=rows;
+//					  });
+				
+				
 				graphic_data.forEach(function(d) {
-		
 				
 					if(dvc.essential.dateFormat != "") {
 						d.cat = d3.time.format(dvc.essential.dateFormat).parse(d.group);
@@ -389,7 +434,13 @@ function drawGraphic(width) {
 				});
 		
 				pymChild = new pym.Child({ renderCallback: drawGraphic});
+				
+				
+				
 			});
+			
+			
+		
 	});
 	
 	} else {

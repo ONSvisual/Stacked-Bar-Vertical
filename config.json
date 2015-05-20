@@ -33,7 +33,7 @@
             ],
         
             "yAxisLabel":"%",
-            "yAxisScale":"auto_min_max",   
+            "yAxisScale":"auto_zero_max",   
             "yAxisBreak": true,
             "yAxisBreak_sm_md_lg": [65,65,65]            
     },
