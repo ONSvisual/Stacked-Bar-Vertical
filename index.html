@@ -376,7 +376,8 @@ function drawGraphic(width) {
 
 		d3.json("config.json", function(error, config) {
 		dvc=config
-		
+			
+			// Cycle through data and sum all data for all data columns
 			d3.csv(dvc.essential.graphic_data_url).row(function(d) { 
 						  var mySum = 0;
 						  for (var o in d) { // iterate all the properties of d
@@ -394,24 +395,6 @@ function drawGraphic(width) {
 			d3.csv(dvc.essential.graphic_data_url, function(error, data) {
 				graphic_data = data;
 				varnames = d3.keys(graphic_data[0]).filter(function(key) { return key !== "group";});
-				
-				//Get a sum of all variables (needed for working out max for y-axis)			
-//				d3.csv(dvc.essential.graphic_data_url)
-//				  .row(function(d) { 
-//						  var mySum = 0;
-//						  for (var o in d) { // iterate all the properties of d
-//							  if (o === "group") continue; // if it's our key field skip it
-//							  else mySum += +d[o]; // everyone else into the sum
-//							}
-//							return mySum
-//							
-//					  
-//					   })
-//					 .get(function(error, rows) { 
-//						
-//						dvc.rows=rows;
-//					  });
-				
 				
 				graphic_data.forEach(function(d) {
 				
