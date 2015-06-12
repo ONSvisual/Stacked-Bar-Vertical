@@ -377,20 +377,7 @@ function drawGraphic(width) {
 		d3.json("config.json", function(error, config) {
 		dvc=config
 			
-			// Cycle through data and sum all data for all data columns
-			d3.csv(dvc.essential.graphic_data_url).row(function(d) { 
-						  var mySum = 0;
-						  for (var o in d) { // iterate all the properties of d
-							  if (o === "group") continue; // if it's our key field skip it
-							  else mySum += +d[o]; // everyone else into the sum
-							}
-							return mySum
-							
-					  
-					   })
-					 .get(function(error, rows) { 
-						dvc.rows=rows;
-			});
+
 		  		
 			d3.csv(dvc.essential.graphic_data_url, function(error, data) {
 				graphic_data = data;
@@ -398,11 +385,7 @@ function drawGraphic(width) {
 				
 				graphic_data.forEach(function(d) {
 				
-					if(dvc.essential.dateFormat != "") {
-						d.cat = d3.time.format(dvc.essential.dateFormat).parse(d.group);
-					} else {
-						d.cat = d.group;
-					}
+					d.cat = d.group;
 					
 					var y0 = 0;
 					d.vars = varnames.map(function(name){ return {
@@ -416,9 +399,20 @@ function drawGraphic(width) {
 					d.total = d.vars[d.vars.length - 1].y1;
 				});
 		
-				pymChild = new pym.Child({ renderCallback: drawGraphic});
-				
-				
+				// Cycle through data and sum all data for all data columns
+				d3.csv(dvc.essential.graphic_data_url).row(function(d) { 
+							  var mySum = 0;
+							  for (var o in d) { // iterate all the properties of d
+								  if (o === "group") continue; // if it's our key field skip it
+								  else mySum += +d[o]; // everyone else into the sum
+								}
+								return mySum
+						  
+						   })
+						 .get(function(error, rows) { 
+							dvc.rows=rows;
+							pymChild = new pym.Child({ renderCallback: drawGraphic});
+						  });
 				
 			});
 			
