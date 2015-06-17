@@ -326,11 +326,8 @@ function drawGraphic(width) {
 			if(dvc.essential.dateFormat==""){
 			
 			function insertLinebreaksLabels() {
-							var str = this.innerHTML;
-		
-							//var el1 = dvc.essential.annotationChart[i];
-							var el = str.data;
-					
+							var str = this.textContent;
+	
 							var words = str.split('  ');
 							
 							d3.select(this/*str*/).text('');
